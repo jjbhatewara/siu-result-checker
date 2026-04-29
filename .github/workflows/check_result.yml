@@ -1,0 +1,39 @@
+name: SIU Result Checker
+
+on:
+  # ── Runs 4× a day at 3:30, 7:30, 13:30, 18:30 IST (UTC+5:30) ──
+  # IST 9:00  AM  → UTC  3:30
+  # IST 1:00  PM  → UTC  7:30
+  # IST 7:00  PM  → UTC 13:30
+  # IST 12:00 AM  → UTC 18:30
+  schedule:
+    - cron: "30 3  * * *"
+    - cron: "30 7  * * *"
+    - cron: "30 13 * * *"
+    - cron: "30 18 * * *"
+
+  # ── Also lets you trigger manually from GitHub UI ──
+  workflow_dispatch:
+
+jobs:
+  check-result:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run result checker
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python check_result.py
